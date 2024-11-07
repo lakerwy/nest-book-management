@@ -8,12 +8,14 @@ import {
   UseInterceptors,
   BadRequestException,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
+import { storage } from './my-file-storage';
 
 @Controller('book')
 export class BookController {
@@ -23,7 +25,7 @@ export class BookController {
   @UseInterceptors(
     FileInterceptor('file', {
       dest: 'uploads',
-      // storage: storage,
+      storage: storage,
       limits: {
         fileSize: 1024 * 1024 * 3,
       },
@@ -39,12 +41,12 @@ export class BookController {
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     console.log('file', file);
-    return file;
+    return file.path;
   }
 
   @Get('list')
-  async list() {
-    return this.bookService.list();
+  async list(@Query('name') name: string) {
+    return this.bookService.list(name);
   }
 
   @Get(':id')
